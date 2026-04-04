@@ -1,11 +1,11 @@
 "use client"
 
-import { useMemo } from "react"
 import { cva, type VariantProps } from "class-variance-authority"
+import { useMemo } from "react"
 
-import { cn } from "@/lib/utils"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import { cn } from "@/lib/utils"
 
 function FieldSet({ className, ...props }: React.ComponentProps<"fieldset">) {
   return (
@@ -31,9 +31,9 @@ function FieldLegend({
       data-slot="field-legend"
       data-variant={variant}
       className={cn(
-        "mb-3 font-medium",
-        "data-[variant=legend]:text-base",
-        "data-[variant=label]:text-sm",
+        "mb-3 font-bold tracking-[0.2em] uppercase text-primary/80",
+        "data-[variant=legend]:text-sm",
+        "data-[variant=label]:text-xs",
         className
       )}
       {...props}
@@ -235,14 +235,10 @@ function FieldError({
 }
 
 export {
-  Field,
-  FieldLabel,
-  FieldDescription,
+  Field, FieldContent, FieldDescription,
   FieldError,
-  FieldGroup,
-  FieldLegend,
+  FieldGroup, FieldLabel, FieldLegend,
   FieldSeparator,
-  FieldSet,
-  FieldContent,
-  FieldTitle,
+  FieldSet, FieldTitle
 }
+
