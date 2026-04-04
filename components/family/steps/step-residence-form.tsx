@@ -16,7 +16,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { housingStatusEnum } from "@/lib/db/schema";
 import { cn } from "@/lib/utils";
 import { residenceFormSchema } from "@/lib/validator/family";
 import { useForm } from "@tanstack/react-form";
@@ -29,13 +28,7 @@ import {
   ShieldCheck,
   Users,
 } from "lucide-react";
-
-interface SectorFormProps {
-  initialData?: Partial<residenceFormSchema>;
-  onNext?: (values: residenceFormSchema) => void;
-}
-
-export type HousingStatus = (typeof housingStatusEnum.enumValues)[number];
+import { HousingStatus } from "../resident-form-fields";
 
 const housingStatusOptions: {
   value: HousingStatus;
@@ -68,6 +61,11 @@ const housingStatusOptions: {
     description: "Bajo cuidado temporal",
   },
 ];
+
+interface SectorFormProps {
+  initialData?: Partial<residenceFormSchema>;
+  onNext?: (values: residenceFormSchema) => void;
+}
 
 export function StepResidenceForm({ initialData, onNext }: SectorFormProps) {
   const form = useForm({

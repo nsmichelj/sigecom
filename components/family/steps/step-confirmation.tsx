@@ -1,7 +1,6 @@
 import { createFamilyAction } from "@/actions/family";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { housingStatusEnum, relationshipEnum } from "@/lib/db/schema";
 import { familyFormSchema } from "@/lib/validator/family";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -13,31 +12,18 @@ import {
   Users,
 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  HousingStatus,
+  housingStatusOptions,
+  Relationship,
+  relationshipOptions,
+} from "../resident-form-fields";
 
 interface StepConfirmationProps {
   formValues: familyFormSchema;
   onNext: () => void;
   onPrevious: () => void;
 }
-
-export type Relationship = (typeof relationshipEnum.enumValues)[number];
-export type HousingStatus = (typeof housingStatusEnum.enumValues)[number];
-
-const relationshipOptions: { value: Relationship; label: string }[] = [
-  { value: "headOfFamily", label: "Jefe de Familia" },
-  { value: "spouse", label: "Cónyuge" },
-  { value: "child", label: "Hijo/a" },
-  { value: "parent", label: "Padre/Madre" },
-  { value: "sibling", label: "Hermano/a" },
-  { value: "other", label: "Otro" },
-];
-
-const housingStatusOptions: Record<HousingStatus, string> = {
-  owned: "Propia",
-  rented: "Alquilada",
-  shared: "Arrimado / Compartida",
-  custody: "Al cuidado / Comodato",
-};
 
 export function StepConfirmation({
   formValues,
