@@ -8,7 +8,7 @@ export function DashboardTitle({
   return (
     <h2
       className={cn(
-        "text-2xl md:text-3xl font-bold text-primary/80",
+        "text-2xl md:text-3xl tracking-tight font-bold text-primary",
         className,
       )}
       {...props}
