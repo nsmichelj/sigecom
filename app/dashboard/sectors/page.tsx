@@ -1,4 +1,10 @@
-import { DashboardHeader, DashboardTitle } from "@/components/dashboard/panel";
+import {
+  DashboardDescription,
+  DashboardHeader,
+  DashboardHeaderActions,
+  DashboardHeaderContent,
+  DashboardTitle,
+} from "@/components/dashboard/panel";
 import { CreateSectorDialog } from "@/components/sectors/create-sector-dialog";
 import { SectorsTable } from "@/components/sectors/sectors-table";
 
@@ -8,13 +14,23 @@ export const metadata = {
 
 export default function SectorsPage() {
   return (
-    <div className="flex flex-col gap-6 w-full mx-auto">
+    <div className="flex flex-col gap-6 w-full">
       <DashboardHeader>
-        <DashboardTitle>Sectores</DashboardTitle>
-        <CreateSectorDialog />
+        <DashboardHeaderContent>
+          <DashboardTitle>Sectores</DashboardTitle>
+          <DashboardDescription>
+            Administra los sectores registrados en el sistema.
+          </DashboardDescription>
+        </DashboardHeaderContent>
+
+        <DashboardHeaderActions>
+          <CreateSectorDialog />
+        </DashboardHeaderActions>
       </DashboardHeader>
 
-      <SectorsTable />
+      <div className="w-full relative">
+        <SectorsTable />
+      </div>
     </div>
   );
 }
