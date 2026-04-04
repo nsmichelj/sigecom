@@ -1,6 +1,6 @@
 "use client";
 
-import { Blocks, ChevronRight, type LucideIcon } from "lucide-react";
+import { ChevronRight, type LucideIcon } from "lucide-react";
 
 import {
   Collapsible,
@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/collapsible";
 import {
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuAction,
   SidebarMenuButton,
@@ -36,15 +35,6 @@ export function NavMain({
 }) {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>General</SidebarGroupLabel>
-      <SidebarMenuItem>
-        <SidebarMenuButton tooltip="Inicio" asChild isActive={true}>
-          <Link href="/dashboard">
-            <Blocks />
-            <span>Inicio</span>
-          </Link>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
       <SidebarMenu>
         {items.map((item) => (
           <Collapsible key={item.title} asChild defaultOpen={item.isActive}>

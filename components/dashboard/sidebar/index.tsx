@@ -13,14 +13,24 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Map } from "lucide-react";
+import { Blocks, Map, Users } from "lucide-react";
 import Link from "next/link";
 
 const data = [
   {
+    title: "Inicio",
+    url: "/dashboard",
+    icon: Blocks,
+  },
+  {
     title: "Sectores",
     url: "/dashboard/sectors",
     icon: Map,
+  },
+  {
+    title: "Familias",
+    url: "/dashboard/family",
+    icon: Users,
   },
 ];
 
