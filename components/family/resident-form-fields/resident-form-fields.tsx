@@ -159,8 +159,10 @@ export function ResidentFormFields({
               validators={{
                 onChangeAsync: async ({ value }) => {
                   if (!value || value.length < 5) return undefined;
-                  const { error, data } =
-                    await checkResidentCedulaAction(value);
+                  const { error } = await checkResidentCedulaAction(
+                    value,
+                    form.state.values.resident?.id,
+                  );
                   return error ? { message: error } : undefined;
                 },
               }}

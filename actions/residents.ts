@@ -4,7 +4,10 @@ import db from "@/lib/db";
 import { residents } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 
-export async function checkResidentCedulaAction(cedula: string) {
+export async function checkResidentCedulaAction(
+  cedula: string,
+  currentResidentId?: string,
+) {
   if (!cedula) return { success: false, error: "Cédula no proporcionada." };
 
   try {
@@ -21,6 +24,10 @@ export async function checkResidentCedulaAction(cedula: string) {
 
     if (!resident) {
       return { success: true, status: "not_found" };
+    }
+
+    if (currentResidentId && resident.id === currentResidentId) {
+      return { success: true, data: resident };
     }
 
     if (resident.familyMemberships && resident.familyMemberships.length > 0) {
