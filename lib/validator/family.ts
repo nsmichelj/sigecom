@@ -12,6 +12,7 @@ export const residenceFormSchema = z.object({
 });
 
 export const familyMemberSchema = z.object({
+  id: z.string().optional(),
   resident: residentFormSchema,
   relationship: z.string().min(1, "Relación es requerida"),
   isHeadOfFamily: z.boolean(),

@@ -2,7 +2,7 @@
 
 import db from "@/lib/db";
 import { family, familyMembers, houses, residents } from "@/lib/db/schema";
-import { familyFormSchema } from "@/lib/validator/family";
+import { familyFormSchema, familyMemberSchema } from "@/lib/validator/family";
 import { desc, eq } from "drizzle-orm";
 
 export async function getFamiliesAction() {
@@ -214,5 +214,119 @@ export async function addFamilyMemberAction(
       success: false,
       error: error.message || "Error al agregar el miembro a la familia.",
     };
+  }
+}
+
+export async function getFamilyByIdAction(id: string) {
+  try {
+    const data = await db.query.family.findFirst({
+      where: eq(family.id, id),
+      with: {
+        house: {
+          with: {
+            sector: true,
+          },
+        },
+        members: {
+          with: {
+            resident: true,
+          },
+        },
+      },
+    });
+
+    if (!data) {
+      return { success: false, error: "Familia no encontrada." };
+    }
+
+    return { success: true, data };
+  } catch (error) {
+    console.error("Error fetching family:", error);
+    return { success: false, error: "Error al obtener la familia." };
+  }
+}
+
+export async function updateFamilyMemberAction(
+  memberId: string,
+  formData: familyMemberSchema,
+) {
+  const familyMemberId = formData.id;
+
+  if (!familyMemberId || !memberId) {
+    return { success: false, error: "Información incompleta." };
+  }
+  try {
+    const updatedData = await db.transaction(async (tx) => {
+      const resident = await tx.query.residents.findFirst({
+        where: eq(residents.id, memberId),
+      });
+
+      if (!resident) {
+        tx.rollback();
+        return { success: false, error: "Residente no encontrado." };
+      }
+
+      // Verify cedula hasn't been taken by someone else
+      if (memberId && resident.id !== memberId) {
+        tx.rollback();
+        return {
+          success: false,
+          error: "Ya existe un residente con esta cédula.",
+        };
+      }
+
+      // Update resident details
+      await tx
+        .update(residents)
+        .set({
+          ...formData.resident,
+        })
+        .where(eq(residents.id, memberId));
+
+      // Update relationship (leaving isHeadOfFamily exactly as it was)
+      const [updatedMembership] = await tx
+        .update(familyMembers)
+        .set({
+          relationship: formData.relationship,
+        })
+        .where(eq(familyMembers.id, familyMemberId))
+        .returning();
+
+      return updatedMembership;
+    });
+
+    return { success: true, data: updatedData };
+  } catch (error: any) {
+    console.error("Error updating family member:", error);
+    return {
+      success: false,
+      error: "Error al actualizar la información.",
+    };
+  }
+}
+
+export async function removeFamilyMemberAction(familyMemberId: string) {
+  try {
+    const member = await db.query.familyMembers.findFirst({
+      where: eq(familyMembers.id, familyMemberId),
+    });
+
+    if (!member) {
+      return { success: false, error: "Miembro no encontrado." };
+    }
+
+    if (member.isHeadOfFamily) {
+      return {
+        success: false,
+        error: "No se puede eliminar al Jefe de Familia directamente. Traspase la responsabilidad primero o elimine la familia por completo.",
+      };
+    }
+
+    await db.delete(familyMembers).where(eq(familyMembers.id, familyMemberId));
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error removing family member:", error);
+    return { success: false, error: "Error al eliminar el miembro." };
   }
 }

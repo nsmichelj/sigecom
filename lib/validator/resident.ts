@@ -2,6 +2,7 @@ import z from "zod";
 import { civilStatusEnum, educationLevelEnum, genderEnum } from "../db/schema";
 
 export const residentFormSchema = z.object({
+  id: z.string().optional(),
   firstName: z.string().min(3, "Nombre inválido, mínimo 3 caracteres"),
   lastName: z.string().min(3, "Apellido inválido, mínimo 3 caracteres"),
   cedula: z.string().regex(/^[0-9]{6,10}$/, "Cédula inválida"),

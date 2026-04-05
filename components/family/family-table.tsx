@@ -20,7 +20,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader, MoreHorizontal, Plus, Trash2, Users } from "lucide-react";
+import { Eye, Loader, MoreHorizontal, Plus, Trash2, Users } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -141,6 +142,12 @@ export function FamiliesTable() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                          <DropdownMenuItem asChild>
+                            <Link href={`/dashboard/family/${f.id}`}>
+                              <Eye />
+                              Ver Detalles
+                            </Link>
+                          </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => setSelectedFamilyId(f.id)}
                           >
@@ -149,6 +156,7 @@ export function FamiliesTable() {
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
+                            className="text-destructive focus:bg-destructive/10 focus:text-destructive"
                             onClick={() => {
                               deleteMutation.mutate(f.id);
                             }}
