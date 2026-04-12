@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -19,10 +20,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useDebounce } from "@/hooks/use-debounce";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Eye, Loader, MoreHorizontal, Plus, Trash2, Users } from "lucide-react";
+import {
+  Eye,
+  Loader,
+  MoreHorizontal,
+  Plus,
+  Search,
+  Trash2,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 const housingStatusMap: Record<string, string> = {
@@ -33,8 +43,10 @@ const housingStatusMap: Record<string, string> = {
 };
 
 export function FamiliesTable() {
-  const queryClient = useQueryClient();
+  const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const [selectedFamilyId, setSelectedFamilyId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["families"],
@@ -44,6 +56,18 @@ export function FamiliesTable() {
       return result.data || [];
     },
   });
+
+  const families = useMemo(() => {
+    if (!data) return [];
+    if (!debouncedSearchTerm) return data;
+
+    const search = debouncedSearchTerm.toLowerCase();
+    return data.filter((f: any) =>
+      f.members.some((m: any) =>
+        m.resident.cedula.toLowerCase().includes(search),
+      ),
+    );
+  }, [data, debouncedSearchTerm]);
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -75,10 +99,17 @@ export function FamiliesTable() {
     );
   }
 
-  const families = data || [];
-
   return (
     <>
+      <div className="mb-4 relative group max-w-sm">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+        <Input
+          placeholder="Buscar por cédula de integrante..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="pl-10 h-11 bg-card/50 border-border/50 focus:ring-primary/20 transition-all rounded-xl"
+        />
+      </div>
       <div className="rounded-md border bg-card">
         <Table>
           <TableHeader>
@@ -135,13 +166,19 @@ export function FamiliesTable() {
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 rounded-full hover:bg-primary/10"
+                          >
                             <span className="sr-only">Abrir menú</span>
                             <MoreHorizontal />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                          <DropdownMenuLabel className="px-2 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
+                            Gestión
+                          </DropdownMenuLabel>
                           <DropdownMenuItem asChild>
                             <Link href={`/dashboard/family/${f.id}`}>
                               <Eye />
