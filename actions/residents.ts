@@ -2,7 +2,7 @@
 
 import db from "@/lib/db";
 import { residents } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 
 export async function checkResidentCedulaAction(
   cedula: string,
@@ -47,5 +47,64 @@ export async function checkResidentCedulaAction(
   } catch (error) {
     console.error("Error checking resident cedula:", error);
     return { success: false, error: "Error al verificar la cédula." };
+  }
+}
+
+export async function getResidentsAction() {
+  try {
+    const data = await db.query.residents.findMany({
+      orderBy: [desc(residents.createdAt)],
+      with: {
+        familyMemberships: {
+          with: {
+            family: {
+              with: {
+                house: {
+                  with: {
+                    sector: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return { success: true, data };
+  } catch (error) {
+    console.error("Error fetching residents:", error);
+    return { success: false, error: "Error al obtener los residentes." };
+  }
+}
+
+export async function deleteResidentAction(id: string) {
+  try {
+    const resident = await db.query.residents.findFirst({
+      where: eq(residents.id, id),
+      with: {
+        familyMemberships: true,
+      },
+    });
+
+    if (!resident) {
+      return { success: false, error: "Residente no encontrado." };
+    }
+
+    // Check if they are a head of family in any membership
+    const isHead = resident.familyMemberships.some((m) => m.isHeadOfFamily);
+    if (isHead) {
+      return {
+        success: false,
+        error:
+          "No se puede eliminar a un Jefe de Familia directamente. Traspase la responsabilidad primero o elimine la familia por completo.",
+      };
+    }
+
+    await db.delete(residents).where(eq(residents.id, id));
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting resident:", error);
+    return { success: false, error: "Error al eliminar el residente." };
   }
 }

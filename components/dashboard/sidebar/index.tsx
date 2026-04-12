@@ -13,7 +13,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Blocks, Map, Users } from "lucide-react";
+import { Blocks, Map, User, Users } from "lucide-react";
 import Link from "next/link";
 
 const data = [
@@ -31,6 +31,11 @@ const data = [
     title: "Familias",
     url: "/dashboard/family",
     icon: Users,
+  },
+  {
+    title: "Habitantes",
+    url: "/dashboard/residents",
+    icon: User,
   },
 ];
 
