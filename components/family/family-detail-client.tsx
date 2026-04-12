@@ -16,11 +16,13 @@ import { toast } from "sonner";
 import { Card, CardContent } from "../ui/card";
 import { AddMemberDialog } from "./add-member-dialog";
 import { EditMemberDialog } from "./edit-member-dialog";
+import { MemberDetailDialog } from "./member-detail-dialog";
 import {
   genderOptions,
   Relationship,
   relationshipOptions,
 } from "./resident-form-fields";
+import { FileSpreadsheet, FileText } from "lucide-react";
 
 const housingStatusMap: Record<string, string> = {
   owned: "Propia",
@@ -62,6 +64,7 @@ function MemberCard({
   familyId: string;
 }) {
   const [open, setOpen] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
   const { resident } = familyMember;
   const queryClient = useQueryClient();
 
@@ -88,11 +91,15 @@ function MemberCard({
 
   return (
     <>
-      <Card className={isHead ? "border-primary/30" : ""}>
-        <CardContent className="flex flex-row items-center justify-between">
+      <Card 
+        className={`${isHead ? "border-primary/30" : ""} cursor-pointer hover:border-primary/50 hover:shadow-md transition-all duration-200 group relative overflow-hidden`}
+        onClick={() => setDetailOpen(true)}
+      >
+        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        <CardContent className="flex flex-row items-center justify-between relative z-10">
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-3">
-              <h3 className="text-xl font-bold tracking-tight text-foreground">
+              <h3 className="text-xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
                 {resident.firstName} {resident.lastName}
               </h3>
             </div>
@@ -119,8 +126,11 @@ function MemberCard({
             <Button
               variant="outline"
               size="icon"
-              className="rounded-full size-10 bg-background/50 backdrop-blur disabled:opacity-50"
-              onClick={() => setOpen(true)}
+              className="rounded-full size-10 bg-background/50 backdrop-blur disabled:opacity-50 hover:bg-primary/10 hover:text-primary hover:border-primary/30"
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpen(true);
+              }}
               disabled={deleteMutation.isPending}
             >
               <Pencil />
@@ -129,7 +139,8 @@ function MemberCard({
               variant="outline"
               size="icon"
               className="rounded-full size-10 bg-destructive/10 text-destructive border-transparent hover:bg-destructive hover:text-white backdrop-blur disabled:opacity-50"
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 deleteMutation.mutate();
               }}
               disabled={deleteMutation.isPending || isHead}
@@ -139,6 +150,12 @@ function MemberCard({
           </div>
         </CardContent>
       </Card>
+
+      <MemberDetailDialog
+        member={familyMember}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+      />
 
       <EditMemberDialog
         initialData={familyMember}
@@ -267,12 +284,24 @@ export function FamilyDetailClient() {
               </h3>
               <div className="h-px bg-border w-24 sm:w-auto sm:flex-1 ml-4 shadow-sm" />
             </div>
-            <Button
-              className="rounded-full shadow-sm"
-              onClick={() => setAddMemberOpen(true)}
-            >
-              Agregar Miembro
-            </Button>
+            <div className="flex items-center gap-3">
+              <div className="hidden sm:flex gap-2">
+                <Button variant="outline" size="sm" className="gap-2 rounded-full h-9">
+                  <FileSpreadsheet className="size-4 text-emerald-600" />
+                  <span className="text-xs">Ficha Excel</span>
+                </Button>
+                <Button variant="outline" size="sm" className="gap-2 rounded-full h-9">
+                  <FileText className="size-4 text-red-600" />
+                  <span className="text-xs">Ficha PDF</span>
+                </Button>
+              </div>
+              <Button
+                className="rounded-full shadow-sm"
+                onClick={() => setAddMemberOpen(true)}
+              >
+                Agregar Miembro
+              </Button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
