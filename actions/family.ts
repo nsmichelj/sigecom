@@ -142,7 +142,26 @@ export async function createFamilyAction(formData: familyFormSchema) {
 
 export async function deleteFamilyAction(id: string) {
   try {
-    await db.delete(family).where(eq(family.id, id));
+    await db.transaction(async (tx) => {
+      const _family = await tx.query.family.findFirst({
+        where: eq(family.id, id),
+      });
+      if (!_family) {
+        tx.rollback();
+        throw new Error("Familia no encontrada.");
+      }
+      const members = await tx.query.familyMembers.findMany({
+        where: eq(familyMembers.familyId, id),
+      });
+
+      const promises = members.map((member) =>
+        tx.delete(residents).where(eq(residents.id, member.residentId)),
+      );
+      await Promise.all(promises);
+      await tx.delete(familyMembers).where(eq(familyMembers.familyId, id));
+      await tx.delete(houses).where(eq(houses.id, _family.houseId));
+      await tx.delete(family).where(eq(family.id, id));
+    });
     return { success: true };
   } catch (error) {
     console.error("Error deleting family:", error);
@@ -318,7 +337,8 @@ export async function removeFamilyMemberAction(familyMemberId: string) {
     if (member.isHeadOfFamily) {
       return {
         success: false,
-        error: "No se puede eliminar al Jefe de Familia directamente. Traspase la responsabilidad primero o elimine la familia por completo.",
+        error:
+          "No se puede eliminar al Jefe de Familia directamente. Traspase la responsabilidad primero o elimine la familia por completo.",
       };
     }
 
