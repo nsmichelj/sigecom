@@ -29,7 +29,7 @@ export function AddResidentLinkDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-25 p-0 overflow-hidden border-none shadow-2xl">
+      <DialogContent className="sm:max-w-125 p-0 overflow-hidden border-none shadow-2xl">
         <DialogHeader className="p-8 bg-linear-to-br from-primary/10 via-primary/5 to-background border-b border-border/40">
           <div className="flex items-center gap-4 mb-2">
             <div className="p-3 bg-primary/10 rounded-xl">
