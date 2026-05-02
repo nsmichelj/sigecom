@@ -2,7 +2,7 @@
 
 import db from "@/lib/db";
 import { residents } from "@/lib/db/schema";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, ilike, or } from "drizzle-orm";
 
 export async function checkResidentCedulaAction(
   cedula: string,
@@ -106,5 +106,23 @@ export async function deleteResidentAction(id: string) {
   } catch (error) {
     console.error("Error deleting resident:", error);
     return { success: false, error: "Error al eliminar el residente." };
+  }
+}
+
+export async function searchResidentsAction(query: string) {
+  try {
+    const data = await db.query.residents.findMany({
+      where: or(
+        ilike(residents.firstName, `%${query}%`),
+        ilike(residents.lastName, `%${query}%`),
+        ilike(residents.cedula, `%${query}%`),
+      ),
+      orderBy: [desc(residents.createdAt)],
+    });
+
+    return { success: true, data };
+  } catch (error) {
+    console.error("Error searching residents:", error);
+    return { success: false, error: "Error al buscar los residentes." };
   }
 }
