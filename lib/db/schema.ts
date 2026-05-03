@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import {
   boolean,
+  decimal,
   index,
   integer,
   pgEnum,
@@ -46,6 +47,20 @@ export const relationshipEnum = pgEnum("relationship", [
   "parent", // Padre/Madre
   "sibling", // Hermano/a
   "other", // Otro
+]);
+
+export const projectStatusEnum = pgEnum("project_status", [
+  "active", // Activo
+  "inactive", // Inactivo
+  "completed", // Completado
+  "cancelled", // Cancelado
+]);
+
+export const movementTypeEnum = pgEnum("movement_type", ["ingreso", "egreso"]);
+
+export const committeeRoleEnum = pgEnum("committee_role", [
+  "main", // Principal
+  "substitute", // Suplente
 ]);
 
 export const user = pgTable("user", {
@@ -187,9 +202,105 @@ export const residents = pgTable("residents", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const projects = pgTable("projects", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description"),
+  budget: decimal("budget", { precision: 10, scale: 2 }).notNull(),
+  status: projectStatusEnum("status").default("active").notNull(),
+  coverImage: text("cover_image"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+});
+
+export const projectsEvidence = pgTable("projects_evidence", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  projectId: uuid("project_id")
+    .notNull()
+    .references(() => projects.id, { onDelete: "cascade" }),
+  evidence: text("evidence").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const movements = pgTable("movements", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  projectId: uuid("project_id")
+    .notNull()
+    .references(() => projects.id, { onDelete: "cascade" }),
+  type: movementTypeEnum("type").notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const committees = pgTable("committees", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description"),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const committeeMembers = pgTable("committee_members", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  committeeId: uuid("committee_id")
+    .notNull()
+    .references(() => committees.id, { onDelete: "cascade" }),
+  residentId: uuid("resident_id")
+    .notNull()
+    .references(() => residents.id, { onDelete: "cascade" }),
+  role: committeeRoleEnum("role").default("main").notNull(),
+  joinedAt: timestamp("joined_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const committeeMembersRelations = relations(
+  committeeMembers,
+  ({ one }) => ({
+    committee: one(committees, {
+      fields: [committeeMembers.committeeId],
+      references: [committees.id],
+    }),
+    resident: one(residents, {
+      fields: [committeeMembers.residentId],
+      references: [residents.id],
+    }),
+  }),
+);
+
+export const committeesRelations = relations(committees, ({ many }) => ({
+  members: many(committeeMembers),
+}));
+
+export const projectsRelations = relations(projects, ({ many }) => ({
+  evidences: many(projectsEvidence),
+  movements: many(movements),
+}));
+
+export const projectsEvidenceRelations = relations(
+  projectsEvidence,
+  ({ one }) => ({
+    project: one(projects, {
+      fields: [projectsEvidence.projectId],
+      references: [projects.id],
+    }),
+  }),
+);
+
+export const movementsRelations = relations(movements, ({ one }) => ({
+  project: one(projects, {
+    fields: [movements.projectId],
+    references: [projects.id],
+  }),
+}));
+
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),
+  news: many(news),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -239,4 +350,31 @@ export const familyMembersRelations = relations(familyMembers, ({ one }) => ({
 
 export const residentsRelations = relations(residents, ({ many }) => ({
   familyMemberships: many(familyMembers),
+  committeeMemberships: many(committeeMembers),
+}));
+
+export const news = pgTable("news", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 255 }).notNull().unique(),
+  content: text("content").notNull(),
+  excerpt: text("excerpt"),
+  coverImage: text("cover_image"),
+  authorId: uuid("author_id").references(() => user.id, {
+    onDelete: "set null",
+  }),
+  isPublished: boolean("is_published").default(false).notNull(),
+  publishedAt: timestamp("published_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+});
+
+export const newsRelations = relations(news, ({ one }) => ({
+  author: one(user, {
+    fields: [news.authorId],
+    references: [user.id],
+  }),
 }));
