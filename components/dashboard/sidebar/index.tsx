@@ -13,7 +13,16 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Blocks, Map, User, Users } from "lucide-react";
+import {
+  Blocks,
+  FileBarChart,
+  FileText,
+  Map,
+  ShieldCheck,
+  Store,
+  User,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
 
 const data = [
@@ -36,6 +45,26 @@ const data = [
     title: "Habitantes",
     url: "/dashboard/residents",
     icon: User,
+  },
+  {
+    title: "Comités",
+    url: "/dashboard/committees",
+    icon: ShieldCheck,
+  },
+  {
+    title: "Emprendimientos",
+    url: "/dashboard/businesses",
+    icon: Store,
+  },
+  {
+    title: "Reportes",
+    url: "/dashboard/reports",
+    icon: FileBarChart,
+  },
+  {
+    title: "Noticias",
+    url: "/dashboard/news",
+    icon: FileText,
   },
 ];
 
